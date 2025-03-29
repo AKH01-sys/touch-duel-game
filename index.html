@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Touch Duel: Reflex Rush</title>
+  <title>Touch Duel</title>
   
   <!-- PWA meta tags -->
   <meta name="theme-color" content="#4285f4" />
@@ -22,9 +22,9 @@
 </head>
 <body>
     <div id="start-screen" class="screen active">
-    <h1>Touch Duel: Reflex Rush</h1>
+    <h1>Touch Duel</h1>
     
-    <div class="options-container">
+    <div class="options-container" style="overflow-y: auto;">
       <div class="option-group">
         <h3>Game Duration</h3>
         <div class="duration-options">
@@ -43,7 +43,7 @@
           <label>
             <input type="radio" name="game-duration" value="custom" />
             Custom:
-            <input type="number" id="custom-duration" min="5" max="300" value="30" /> seconds
+            <input type="number" id="custom-duration" min="1" max="300" value="30" step="1" /> seconds
           </label>
         </div>
       </div>
@@ -79,14 +79,40 @@
           </label>
         </div>
       </div>
+
+      <div class="option-group">
+        <h3>Appearance</h3>
+        <div class="appearance-options">
+          <label>
+            <input type="checkbox" id="vibration-toggle" checked />
+            Vibration feedback
+          </label>
+          <label>
+            <input type="checkbox" id="sound-toggle" checked />
+            Sound effects
+          </label>
+          <label>
+            <input type="checkbox" id="high-contrast-toggle" />
+            High contrast mode
+          </label>
+        </div>
+      </div>
     </div>
     
-    <button id="start-button">Start Game</button>
+    <div class="start-buttons">
+      <button id="tutorial-button" class="secondary-button">How to Play</button>
+      <button id="start-button">Start Game</button>
+    </div>
   </div>
 
   <div id="game-screen" class="screen">
     <div id="timer-band">
       <div id="timer">30</div>
+    </div>
+    <div id="countdown-overlay" class="hidden">
+      <div class="countdown-circle">
+        <span id="countdown-number">3</span>
+      </div>
     </div>
     <div id="player1" class="player-zone">
       <div class="score" id="score1">0</div>
@@ -97,11 +123,56 @@
   </div>
 
   <div id="result-screen" class="screen">
-    <h2 id="result-message"></h2>
-    <p>Player 1: <span id="final-score1"></span></p>
-    <p>Player 2: <span id="final-score2"></span></p>
-    <button id="rematch-button">Play Again</button>
-    <button id="restart-button">Change Settings</button>
+    <div class="result-container">
+      <h2 id="result-message"></h2>
+      <div class="score-summary">
+        <div class="player-result player1">
+          <div class="player-label">Player 1</div>
+          <div class="player-score" id="final-score1">0</div>
+        </div>
+        <div class="score-divider"></div>
+        <div class="player-result player2">
+          <div class="player-label">Player 2</div>
+          <div class="player-score" id="final-score2">0</div>
+        </div>
+      </div>
+      <div class="result-buttons">
+        <button id="rematch-button">Play Again</button>
+        <button id="restart-button">Change Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tutorial-overlay" class="hidden" data-version="3.1.1">
+    <div class="tutorial-content">
+      <h2>How to Play</h2>
+      
+      <div class="tutorial-description">
+        <p>Tap the dots as fast as you can to score points!</p>
+      </div>
+      
+      <div class="tutorial-images">
+        <div class="tutorial-step">
+          <div class="dot-example player1-dot"></div>
+          <p>Player 1: Blue</p>
+        </div>
+        <div class="tutorial-step">
+          <div class="dot-example player2-dot"></div>
+          <p>Player 2: Pink</p>
+        </div>
+      </div>
+      
+      <div class="game-modes-help">
+        <h3>Game Modes</h3>
+        <ul>
+          <li><strong>Classic:</strong> Tap dots in your area</li>
+          <li><strong>Penalty:</strong> Missing a dot costs points</li>
+          <li><strong>Mirror:</strong> Race to tap mirrored dots first</li>
+        </ul>
+      </div>
+      
+      <button id="close-tutorial">Got it!</button>
+    </div>
   </div>
 
   <audio id="tap-sound" src="audio/tap.mp3" preload="auto"></audio>

@@ -20,15 +20,26 @@ const tapSound = document.getElementById('tap-sound');
 const errorSound = document.getElementById('error-sound');
 const endSound = document.getElementById('end-sound');
 
+const countdownOverlay = document.getElementById('countdown-overlay');
+const countdownNumber = document.getElementById('countdown-number');
+const tutorialOverlay = document.getElementById('tutorial-overlay');
+const closeTutorialButton = document.getElementById('close-tutorial');
+const tutorialButton = document.getElementById('tutorial-button');
+const vibrationToggle = document.getElementById('vibration-toggle');
+const soundToggle = document.getElementById('sound-toggle');
+const highContrastToggle = document.getElementById('high-contrast-toggle');
+
 const CONFIG = {
   gameDuration: 30,
   dotSize: 50,
   dotTimeout: 3000,
   countdownTime: 3,
-  gameMode: 'classic' // Default game mode
+  gameMode: 'classic',
+  vibration: true,
+  sound: true,
+  highContrast: false
 };
 
-// Add game state management after CONFIG
 const GAME_STATE = {
   isRunning: false,
   isSettingUp: false,
@@ -49,29 +60,25 @@ function getRandomPosition(zone) {
   const timerBand = document.getElementById('timer-band');
   const timerBandRect = timerBand.getBoundingClientRect();
 
-  // Enhanced buffer calculations - using both percentage and absolute minimum
   const BUFFER = {
-    edge: Math.max(radius + 15, zoneRect.width * 0.08), // Increased minimum edge buffer
-    center: Math.max(50, zoneRect.width * 0.12), // Increased center buffer
-    score: Math.max(70, zoneRect.width * 0.18), // Increased score buffer
-    timer: 15 // Additional buffer from timer band
+    edge: Math.max(radius + 15, zoneRect.width * 0.08),
+    center: Math.max(50, zoneRect.width * 0.12),
+    score: Math.max(70, zoneRect.width * 0.18),
+    timer: 15
   };
 
   const isVertical = gameScreen.classList.contains('vertical');
   const scoreElement = zone.querySelector('.score');
   const scoreRect = scoreElement.getBoundingClientRect();
   
-  // Calculate relative positions for more precise boundaries
   const relativeScoreCenter = {
     x: scoreRect.left - zoneRect.left + (scoreRect.width / 2),
     y: scoreRect.top - zoneRect.top + (scoreRect.height / 2)
   };
 
-  // Calculate relative timer band position
   const relativeTimerBottom = isVertical ? 
     (timerBandRect.bottom - zoneRect.top + BUFFER.timer) : 0;
 
-  // Set boundaries with enhanced buffers
   const boundaries = {
     minX: BUFFER.edge,
     maxX: zoneRect.width - BUFFER.edge,
@@ -79,16 +86,13 @@ function getRandomPosition(zone) {
     maxY: zoneRect.height - BUFFER.edge
   };
 
-  // Adjust boundaries based on orientation
   if (isVertical) {
-    // In vertical mode, respect the timer band and center divider
     if (zone.id === 'player1') {
       boundaries.maxY = zoneRect.height - BUFFER.center;
     } else {
       boundaries.minY = Math.max(BUFFER.center, boundaries.minY);
     }
   } else {
-    // In horizontal mode, respect the center divider
     if (zone.id === 'player1') {
       boundaries.maxX = zoneRect.width - BUFFER.center;
     } else {
@@ -96,40 +100,32 @@ function getRandomPosition(zone) {
     }
   }
 
-  // Safety check to ensure we have enough space
   if (boundaries.maxX - boundaries.minX < size || boundaries.maxY - boundaries.minY < size) {
-    console.warn('Not enough space to place dots after applying buffers');
     return {
       x: boundaries.minX + (boundaries.maxX - boundaries.minX) / 2,
       y: boundaries.minY + (boundaries.maxY - boundaries.minY) / 2
     };
   }
 
-  // Improved dot placement with better positioning algorithm
   let x, y, distanceFromScore;
   let attempts = 0;
   const MAX_ATTEMPTS = 50;
 
   do {
-    // Use more precise random positioning
     x = Math.floor(Math.random() * (boundaries.maxX - boundaries.minX - size) + boundaries.minX + radius);
     y = Math.floor(Math.random() * (boundaries.maxY - boundaries.minY - size) + boundaries.minY + radius);
     attempts++;
 
-    // Calculate distance from score display
     distanceFromScore = Math.sqrt(
       Math.pow(x - relativeScoreCenter.x, 2) +
       Math.pow(y - relativeScoreCenter.y, 2)
     );
 
-    // If we found a good position, break the loop
     if (distanceFromScore > BUFFER.score) {
       break;
     }
 
-    // Emergency exit to prevent infinite loops
     if (attempts >= MAX_ATTEMPTS) {
-      console.warn('Max attempts reached when placing dot. Using best available position.');
       break;
     }
   } while (true);
@@ -138,36 +134,35 @@ function getRandomPosition(zone) {
 }
 
 function preloadSounds() {
-  const sounds = [tapSound, errorSound, endSound];
-  sounds.forEach(sound => {
+  [tapSound, errorSound, endSound].forEach(sound => {
     sound.load();
     sound.preload = 'auto';
-    sound.addEventListener('error', (e) => {
-      console.error(`Error loading sound: ${sound.src}`, e);
-    });
   });
-  console.log('Game sounds preloaded');
 }
 
 function playSound(sound, force = false) {
-  if (sound.paused || force) {
+  if (!CONFIG.sound && !force) return;
+
+  if (sound.paused) {
     sound.currentTime = 0;
     const playPromise = sound.play();
-
     if (playPromise !== undefined) {
-      playPromise.catch(error => {
-        console.log("Sound play error:", error);
-        if (error.name === "NotAllowedError") {
-          console.log("Sound autoplay restricted. User interaction required.");
-        }
-      });
+      playPromise.catch(() => {});
     }
   }
+}
+
+function ensureDotStyling(dot, playerNumber) {
+  dot.classList.remove('player1-dot', 'player2-dot');
+  dot.classList.add(playerNumber === 1 ? 'player1-dot' : 'player2-dot');
 }
 
 function spawnDot(playerZone, playerNumber) {
   const dot = document.createElement('div');
   dot.classList.add('dot');
+  
+  ensureDotStyling(dot, playerNumber);
+  
   const { x, y } = getRandomPosition(playerZone);
 
   dot.style.left = `${x}px`;
@@ -183,6 +178,9 @@ function spawnDot(playerZone, playerNumber) {
       clearTimeout(dotTimeout);
     }
 
+    playerZone.classList.add('active');
+    setTimeout(() => playerZone.classList.remove('active'), 150);
+
     const scoreDisplay = playerNumber === 1 ? score1Display : score2Display;
     scoreDisplay.classList.add('score-changed');
     setTimeout(() => scoreDisplay.classList.remove('score-changed'), 300);
@@ -195,7 +193,13 @@ function spawnDot(playerZone, playerNumber) {
       score2Display.textContent = score2;
     }
 
-    playSound(tapSound, true);
+    if (CONFIG.vibration) {
+      try {
+        navigator.vibrate(30);
+      } catch (e) {}
+    }
+
+    playSound(tapSound);
     playerZone.removeChild(dot);
     spawnDot(playerZone, playerNumber);
   }
@@ -240,7 +244,10 @@ function saveUserPreferences() {
     gameDuration: CONFIG.gameDuration,
     customDuration: document.getElementById('custom-duration').value,
     gameMode: CONFIG.gameMode,
-    orientation: document.querySelector('input[name="screen-orientation"]:checked').value
+    orientation: document.querySelector('input[name="screen-orientation"]:checked').value,
+    vibration: CONFIG.vibration,
+    sound: CONFIG.sound,
+    highContrast: CONFIG.highContrast
   };
   
   localStorage.setItem('touchDuelPreferences', JSON.stringify(preferences));
@@ -253,7 +260,6 @@ function loadUserPreferences() {
     try {
       const preferences = JSON.parse(savedPrefs);
       
-      // Set game duration radio buttons
       const durationRadios = document.getElementsByName('game-duration');
       let durationFound = false;
       
@@ -265,7 +271,6 @@ function loadUserPreferences() {
         }
       }
       
-      // If the saved duration doesn't match standard options, use custom
       if (!durationFound && preferences.gameDuration) {
         const customRadio = document.querySelector('input[name="game-duration"][value="custom"]');
         if (customRadio) {
@@ -274,36 +279,43 @@ function loadUserPreferences() {
         }
       }
       
-      // Set game mode
       if (preferences.gameMode) {
         const gameModeRadio = document.querySelector(`input[name="game-mode"][value="${preferences.gameMode}"]`);
-        if (gameModeRadio) {
-          gameModeRadio.checked = true;
-        }
+        if (gameModeRadio) gameModeRadio.checked = true;
       }
       
-      // Set orientation
       if (preferences.orientation) {
         const orientationRadio = document.querySelector(`input[name="screen-orientation"][value="${preferences.orientation}"]`);
-        if (orientationRadio) {
-          orientationRadio.checked = true;
-        }
+        if (orientationRadio) orientationRadio.checked = true;
       }
       
-      // Update CONFIG
       CONFIG.gameDuration = preferences.gameDuration || CONFIG.gameDuration;
       CONFIG.gameMode = preferences.gameMode || CONFIG.gameMode;
+
+      if (preferences.vibration !== undefined) {
+        CONFIG.vibration = preferences.vibration;
+        vibrationToggle.checked = CONFIG.vibration;
+      }
       
-    } catch (error) {
-      console.error("Error loading preferences:", error);
-      // If there's an error, we'll just use defaults
-    }
+      if (preferences.sound !== undefined) {
+        CONFIG.sound = preferences.sound;
+        soundToggle.checked = CONFIG.sound;
+      }
+      
+      if (preferences.highContrast !== undefined) {
+        CONFIG.highContrast = preferences.highContrast;
+        highContrastToggle.checked = CONFIG.highContrast;
+        document.body.classList.toggle('high-contrast', CONFIG.highContrast);
+      }
+    } catch (error) {}
   }
 }
 
 function startGame() {
-  if (GAME_STATE.isSettingUp) return; // Prevent multiple starts
+  if (GAME_STATE.isSettingUp) return;
   GAME_STATE.isSettingUp = true;
+
+  document.body.style.overflow = 'hidden';
 
   const durationRadios = document.getElementsByName('game-duration');
   let selectedDuration = CONFIG.gameDuration;
@@ -312,7 +324,7 @@ function startGame() {
     if (radio.checked) {
       if (radio.value === 'custom') {
         selectedDuration = parseInt(document.getElementById('custom-duration').value);
-        selectedDuration = Math.min(Math.max(selectedDuration, 5), 300);
+        selectedDuration = Math.min(Math.max(selectedDuration, 1), 300);
       } else {
         selectedDuration = parseInt(radio.value);
       }
@@ -321,6 +333,7 @@ function startGame() {
   }
 
   CONFIG.gameDuration = selectedDuration;
+  timerDisplay.textContent = selectedDuration;
 
   const modeRadios = document.getElementsByName('game-mode');
   for (const radio of modeRadios) {
@@ -330,27 +343,21 @@ function startGame() {
     }
   }
   
-  // Apply screen orientation
   const isVertical = document.querySelector('input[name="screen-orientation"]:checked').value === 'vertical';
-  if (isVertical) {
-    gameScreen.classList.add('vertical');
-  } else {
-    gameScreen.classList.remove('vertical');
-  }
+  gameScreen.classList.toggle('vertical', isVertical);
   
-  // Save user preferences
+  CONFIG.vibration = vibrationToggle.checked;
+  CONFIG.sound = soundToggle.checked;
+  CONFIG.highContrast = highContrastToggle.checked;
+
   saveUserPreferences();
-  
-  // Preload sounds before game starts
   preloadSounds();
   
-  // Reset scores for the countdown display
   score1 = 0;
   score2 = 0;
   score1Display.textContent = score1;
   score2Display.textContent = score2;
   
-  // Clear any existing dots from previous games
   const playerElements = document.querySelectorAll('.player-zone');
   playerElements.forEach(zone => {
     Array.from(zone.children).forEach(child => {
@@ -360,25 +367,35 @@ function startGame() {
     });
   });
   
-  // Start with countdown sequence
   startScreen.classList.remove('active');
   gameScreen.classList.add('active');
 
-  let countdown = CONFIG.countdownTime;
-  timerDisplay.textContent = countdown;
-  timerDisplay.classList.add('countdown');
-  
-  // Make sure the timer band is visible during countdown
-  document.getElementById('timer-band').style.display = 'flex';
+  enhancedCountdown();
+}
 
+function safeVibrate(pattern) {
+  if (CONFIG.vibration) {
+    try {
+      navigator.vibrate(pattern);
+    } catch (e) {}
+  }
+}
+
+function enhancedCountdown() {
+  countdownOverlay.classList.remove('hidden');
+  let countdown = CONFIG.countdownTime;
+  countdownNumber.textContent = countdown;
+  
   const countdownTimer = setInterval(() => {
     countdown--;
     if (countdown > 0) {
-      timerDisplay.textContent = countdown;
+      countdownNumber.textContent = countdown;
+      safeVibrate(50);
     } else {
-      timerDisplay.textContent = 'GO!';
+      countdownNumber.textContent = 'GO!';
+      safeVibrate(200);
       setTimeout(() => {
-        timerDisplay.classList.remove('countdown');
+        countdownOverlay.classList.add('hidden');
         initializeGame();
       }, 1000);
       clearInterval(countdownTimer);
@@ -400,7 +417,6 @@ function initializeGame() {
 
   clearActiveDots();
 
-  // Now spawn dots based on game mode AFTER countdown is complete
   switch (CONFIG.gameMode) {
     case 'mirror':
       spawnMirrorDots();
@@ -431,12 +447,13 @@ function endGame() {
   GAME_STATE.isSettingUp = false;
 
   setupEventListeners('penalty', 'remove');
-
   clearActiveDots();
-
   clearInterval(countdownInterval);
   gameScreen.classList.remove('active');
   resultScreen.classList.add('active');
+  
+  document.body.style.overflow = '';
+  
   finalScore1.textContent = score1;
   finalScore2.textContent = score2;
 
@@ -453,33 +470,25 @@ function endGame() {
 
 function handlePenaltyTouch(e) {
   const target = e.target;
-  // Only apply penalty if the touch is not on a dot
   if (!target.classList.contains('dot')) {
-    // This is an incorrect tap anywhere in the play area
     if (e.currentTarget === player1Zone && score1 > 0) {
       score1--;
-      playSound(errorSound, true);
+      playSound(errorSound);
       score1Display.textContent = score1;
     } else if (e.currentTarget === player2Zone && score2 > 0) {
       score2--;
-      playSound(errorSound, true);
+      playSound(errorSound);
       score2Display.textContent = score2;
     }
   }
 }
 
 function spawnMirrorDots() {
-  // Clear any existing dots first
   clearActiveDots();
   
-  // Get a position from player 1's zone to use as reference
   const { x: x1, y: y1 } = getRandomPosition(player1Zone);
-  
-  // Create player 1's dot
   const dot1 = createDot(player1Zone, 1, x1, y1);
   
-  // Now create player 2's dot at the equivalent position
-  // We need to calculate the relative position in player 2's zone
   const zone1Rect = player1Zone.getBoundingClientRect();
   const zone2Rect = player2Zone.getBoundingClientRect();
   
@@ -487,23 +496,17 @@ function spawnMirrorDots() {
   
   const isVertical = gameScreen.classList.contains('vertical');
   if (isVertical) {
-    // For vertical layout, mirror the Y position relative to the height
-    // X position stays proportionally the same
     const relativeX = x1 / zone1Rect.width;
     x2 = relativeX * zone2Rect.width;
     y2 = zone2Rect.height - (y1 / zone1Rect.height * zone2Rect.height);
   } else {
-    // For horizontal layout, mirror the X position relative to the width
-    // Y position stays proportionally the same
     const relativeY = y1 / zone1Rect.height;
     x2 = zone2Rect.width - (x1 / zone1Rect.width * zone2Rect.width);
     y2 = relativeY * zone2Rect.height;
   }
   
-  // Create player 2's dot at the mirrored position
   const dot2 = createDot(player2Zone, 2, x2, y2);
   
-  // Store both dots in our tracker
   activeDots = [
     { dot: dot1, playerZone: player1Zone, playerNumber: 1 },
     { dot: dot2, playerZone: player2Zone, playerNumber: 2 }
@@ -514,27 +517,26 @@ function createDot(playerZone, playerNumber, x, y) {
   const dot = document.createElement('div');
   dot.classList.add('dot');
   
-  // Add mirror mode specific class for styling
+  ensureDotStyling(dot, playerNumber);
+  
   if (CONFIG.gameMode === 'mirror') {
     dot.classList.add('mirror-dot');
-    dot.classList.add(`player${playerNumber}-dot`);
   }
   
-  // Position dot at the calculated coordinates
   dot.style.left = `${x}px`;
   dot.style.top = `${y}px`;
   
-  // Add the touch handler for mirror mode
   function handleMirrorTouch(e) {
     e.stopPropagation();
     e.preventDefault();
     
-    // Add visual feedback by adding a class
+    playerZone.classList.add('active');
+    setTimeout(() => playerZone.classList.remove('active'), 150);
+    
     const scoreDisplay = playerNumber === 1 ? score1Display : score2Display;
     scoreDisplay.classList.add('score-changed');
     setTimeout(() => scoreDisplay.classList.remove('score-changed'), 300);
     
-    // Award point to the player who tapped first
     if (playerNumber === 1) {
       score1++;
       score1Display.textContent = score1;
@@ -543,27 +545,122 @@ function createDot(playerZone, playerNumber, x, y) {
       score2Display.textContent = score2;
     }
     
-    // Play the sound
-    playSound(tapSound, true);
+    playSound(tapSound);
     
-    // Clear the dots and spawn new ones
     clearActiveDots();
     spawnMirrorDots();
   }
   
-  // Add event listeners
   dot.addEventListener('click', handleMirrorTouch);
   dot.addEventListener('touchstart', handleMirrorTouch, { passive: false });
   
-  // Add dot to player zone
   playerZone.appendChild(dot);
   return dot;
 }
 
-startButton.addEventListener('click', startGame);
-rematchButton.addEventListener('click', startGame);
-restartButton.addEventListener('click', () => {
-  location.reload();
+function updateTutorialContent() {
+  const player1DotExample = tutorialOverlay.querySelector('.dot-example.player1-dot');
+  const player2DotExample = tutorialOverlay.querySelector('.dot-example.player2-dot');
+  
+  if (CONFIG.highContrast) {
+    player1DotExample.style.backgroundColor = '#3366ff';
+    player1DotExample.style.border = '3px solid white';
+    player2DotExample.style.backgroundColor = '#ff3366';
+    player2DotExample.style.border = '3px solid white';
+  } else {
+    player1DotExample.style.backgroundColor = 'var(--player1-color)';
+    player1DotExample.style.border = '2px solid rgba(99, 102, 241, 0.7)';
+    player2DotExample.style.backgroundColor = 'var(--player2-color)';
+    player2DotExample.style.border = '2px solid rgba(236, 72, 153, 0.7)';
+  }
+  
+  tutorialOverlay.setAttribute('data-version', Date.now());
+}
+
+function resetGame() {
+  gameScreen.classList.remove('active');
+  resultScreen.classList.remove('active');
+  startScreen.classList.add('active');
+  document.body.style.overflow = '';
+  updateTimerDisplay();
+  updateTutorialContent();
+}
+
+function updateTimerDisplay() {
+  const durationRadios = document.getElementsByName('game-duration');
+  let selectedDuration = CONFIG.gameDuration;
+
+  for (const radio of durationRadios) {
+    if (radio.checked) {
+      if (radio.value === 'custom') {
+        selectedDuration = parseInt(document.getElementById('custom-duration').value);
+        selectedDuration = Math.min(Math.max(selectedDuration, 1), 300);
+      } else {
+        selectedDuration = parseInt(radio.value);
+      }
+      break;
+    }
+  }
+  
+  timerDisplay.textContent = selectedDuration;
+}
+
+function showTutorial() {
+  updateTutorialContent();
+  tutorialOverlay.classList.remove('hidden');
+}
+
+function closeTutorial() {
+  tutorialOverlay.classList.add('hidden');
+}
+
+function toggleHighContrast() {
+  CONFIG.highContrast = highContrastToggle.checked;
+  document.body.classList.toggle('high-contrast', CONFIG.highContrast);
+  saveUserPreferences();
+}
+
+// Event listeners
+document.querySelectorAll('input[name="game-duration"]').forEach(radio => {
+  radio.addEventListener('change', updateTimerDisplay);
 });
 
-document.addEventListener('DOMContentLoaded', loadUserPreferences);
+document.getElementById('custom-duration').addEventListener('input', function(e) {
+  const value = this.value;
+  if (value.includes('.')) {
+    this.value = parseInt(value) || 1;
+  }
+  
+  const customRadio = document.querySelector('input[name="game-duration"][value="custom"]');
+  if (customRadio && customRadio.checked) {
+    updateTimerDisplay();
+  }
+});
+
+startButton.addEventListener('click', startGame);
+rematchButton.addEventListener('click', startGame);
+restartButton.addEventListener('click', resetGame);
+tutorialButton.addEventListener('click', showTutorial);
+closeTutorialButton.addEventListener('click', closeTutorial);
+
+// Single event listener for each toggle
+vibrationToggle.addEventListener('change', () => {
+  CONFIG.vibration = vibrationToggle.checked;
+  saveUserPreferences();
+});
+
+soundToggle.addEventListener('change', () => {
+  CONFIG.sound = soundToggle.checked;
+  saveUserPreferences();
+});
+
+highContrastToggle.addEventListener('change', toggleHighContrast);
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+  loadUserPreferences();
+  updateTutorialContent();
+  updateTimerDisplay();
+  document.body.style.overflow = '';
+  document.getElementById('close-tutorial').addEventListener('click', closeTutorial);
+});
