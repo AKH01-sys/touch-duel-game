@@ -2,8 +2,6 @@
 
 A fast-paced two-player touch-based reflex game perfect for mobile devices.
 
-![Touch Duel Game Preview](screenshots/preview.png)
-
 ## 🎮 Game Overview
 
 Touch Duel is a competitive two-player game where each player races to tap dots that appear on their side of the screen. The player with the most taps when time runs out wins! Perfect for settling friendly disputes or testing reflexes against friends.
