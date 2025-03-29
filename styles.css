@@ -102,13 +102,14 @@ button:focus-visible {
 
 #game-screen.vertical .player-zone {
   width: 100%;
-  height: 50%; /* Ensure equal height in portrait mode */
-  flex: none; /* Override the flex:1 from horizontal layout */
+  height: 50%; /* Equal height distribution */
+  flex: 1; /* Use flex for dynamic allocation of remaining space */
 }
 
 #game-screen.vertical #player1 {
   border-right: none;
   border-bottom: 1px solid #ddd;
+  padding-top: 60px; /* Add space for timer */
 }
 
 #game-screen.vertical #player2 {
@@ -116,21 +117,11 @@ button:focus-visible {
   border-top: 1px solid #ddd;
 }
 
-#game-screen.vertical #player1 .score {
-  left: 10px;
+#game-screen.vertical #timer {
   top: 10px;
 }
 
-#game-screen.vertical #player2 .score {
-  right: 10px;
-  top: 10px;
-}
-
-/* Fix dot positioning in vertical mode */
-#game-screen.vertical .dot {
-  transform: translate(-50%, -50%); /* Ensure consistent transform in both modes */
-}
-
+/* Ensure timer stays visible in both orientations */
 #timer {
   position: absolute;
   top: 10px;
@@ -203,6 +194,11 @@ button:focus-visible {
 
 .dot:active {
   transform: translate(-50%, -50%) scale(0.9);
+}
+
+/* Fix dot positioning in vertical mode */
+#game-screen.vertical .dot {
+  transform: translate(-50%, -50%); /* Ensure consistent transform in both modes */
 }
 
 #result-screen {

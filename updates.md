@@ -502,3 +502,44 @@ Please ensure you have the following audio files in the `/audio/` folder:
 - Tested orientation changes during active gameplay
 - Ensured consistent performance across different browsers
 - Validated accessibility improvements for better inclusivity
+
+---
+
+## Version 2.3.4 - Cross-Device Compatibility Improvements
+
+### Buffer Zone Enhancement
+- Improved buffer zone implementation to work properly across all devices:
+  - Replaced fixed pixel buffers with percentage-based calculations
+  - Added minimum size constraints to maintain usability on small screens
+  - Ensured buffer zones scale appropriately with different screen sizes
+  - Fixed inconsistent dot placement on various device dimensions
+
+### Portrait Mode Layout Fixes
+- Fixed uneven screen division in portrait mode:
+  - Ensured proper 50/50 split for player zones
+  - Added dedicated space for timer at the top of player 1's zone
+  - Prevented dots from spawning in the timer area
+  - Improved border handling between zones in portrait orientation
+
+### Game Flow Improvements
+- Fixed premature dot spawning during countdown:
+  - Dots now only spawn after the countdown completes and the game begins
+  - Eliminated confusing visual feedback during the countdown phase
+  - Reset scores properly at the start of each game
+  - Cleared any potential leftover dots from previous games
+
+### Technical Implementation
+- Refactored `getRandomPosition()` function with:
+  - Percentage-based buffer calculations for better cross-device compatibility
+  - Dynamic timer area detection to prevent overlap
+  - Improved boundary calculations for both orientations
+- Modified game initialization sequence:
+  - Moved dot spawning to after countdown completion
+  - Added proper cleanup before game starts
+  - Clear consistent score display during countdown
+
+### Testing Notes
+- Verified correct buffer zones on multiple device sizes
+- Confirmed layout improvements in portrait mode
+- Validated gameplay flow with proper timing of dot spawning
+- Tested on various mobile devices to ensure consistent experience

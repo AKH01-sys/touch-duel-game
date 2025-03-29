@@ -47,15 +47,20 @@ function getRandomPosition(zone) {
   const size = CONFIG.dotSize;
   const radius = size / 2;
 
+  // Use percentages of zone dimensions for more consistent cross-device behavior
   const BUFFER = {
-    edge: radius + 10,
-    center: 40,
-    score: 60
+    edge: Math.max(radius + 10, zoneRect.width * 0.05), // At least 5% of width from edge
+    center: Math.max(40, zoneRect.width * 0.1), // At least 10% of width from center
+    score: Math.max(60, zoneRect.width * 0.15) // At least 15% of width from score
   };
 
   const isVertical = gameScreen.classList.contains('vertical');
   const scoreElement = zone.querySelector('.score');
   const scoreRect = scoreElement.getBoundingClientRect();
+  
+  // Calculate timer area buffer for portrait mode
+  const timerRect = timerDisplay.getBoundingClientRect();
+  const timerBuffer = isVertical ? (timerRect.height + 20) : 0; // Add extra padding
 
   const relativeScoreCenter = {
     x: scoreRect.left - zoneRect.left + (scoreRect.width / 2),
@@ -70,10 +75,13 @@ function getRandomPosition(zone) {
   };
 
   if (isVertical) {
+    // In vertical mode, adjust Y boundaries to account for timer
     if (zone.id === 'player1') {
+      boundaries.minY = Math.max(boundaries.minY, timerBuffer);
       boundaries.maxY = zoneRect.height - BUFFER.center;
     } else {
       boundaries.minY = BUFFER.center;
+      boundaries.maxY = zoneRect.height - Math.max(BUFFER.edge, timerBuffer / 2);
     }
   } else {
     if (zone.id === 'player1') {
@@ -83,6 +91,7 @@ function getRandomPosition(zone) {
     }
   }
 
+  // Ensure we have enough space to place a dot
   if (boundaries.maxX - boundaries.minX < size || boundaries.maxY - boundaries.minY < size) {
     console.warn('Not enough space to place dots after applying buffers');
     return {
@@ -325,6 +334,22 @@ function startGame() {
   // Preload sounds before game starts
   preloadSounds();
   
+  // Reset scores for the countdown display
+  score1 = 0;
+  score2 = 0;
+  score1Display.textContent = score1;
+  score2Display.textContent = score2;
+  
+  // Clear any existing dots from previous games
+  const playerElements = document.querySelectorAll('.player-zone');
+  playerElements.forEach(zone => {
+    Array.from(zone.children).forEach(child => {
+      if (!child.classList.contains('score')) {
+        zone.removeChild(child);
+      }
+    });
+  });
+  
   // Start with countdown sequence
   startScreen.classList.remove('active');
   gameScreen.classList.add('active');
@@ -357,20 +382,12 @@ function initializeGame() {
   currentTime = CONFIG.gameDuration;
   timerDisplay.textContent = currentTime;
 
-  const playerElements = document.querySelectorAll('.player-zone');
-  playerElements.forEach(zone => {
-    Array.from(zone.children).forEach(child => {
-      if (!child.classList.contains('score')) {
-        zone.removeChild(child);
-      }
-    });
-  });
-
   score1Display.textContent = score1;
   score2Display.textContent = score2;
 
   clearActiveDots();
 
+  // Now spawn dots based on game mode AFTER countdown is complete
   switch (CONFIG.gameMode) {
     case 'mirror':
       spawnMirrorDots();
