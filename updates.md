@@ -383,8 +383,6 @@ Please ensure you have the following audio files in the `/audio/` folder:
 
 ---
 
-# Touch Duel: Reflex Rush - Latest Fixes
-
 ## Version 2.2.1 - Code Cleanup & Error Fixes
 
 ### Script.js Cleanup
@@ -476,3 +474,31 @@ Please ensure you have the following audio files in the `/audio/` folder:
 - Screen orientation switching works properly
 - User preferences are saved and loaded correctly
 - Game state management prevents issues with multiple game starts
+
+---
+
+## Version 2.3.3 - Documentation Update & Game Refinements
+
+### Documentation Improvements
+- Updated README with clearer installation instructions
+- Added more detailed gameplay descriptions for each game mode
+- Improved technical documentation with better API explanations
+- Updated screenshots to reflect the latest UI changes
+
+### UI Feedback Enhancements
+- Added more pronounced visual feedback when scoring points
+- Improved dot animations for better player feedback
+- Enhanced button hover/active states for better interactivity
+- Added subtle background animations during gameplay
+
+### Performance Optimization
+- Improved dot rendering performance for smoother gameplay
+- Reduced unnecessary DOM operations during fast-paced play
+- Better touch event handling with improved debouncing
+- Optimized localStorage operations to reduce lag when saving preferences
+
+### Testing Notes
+- Verified smooth gameplay on various mobile devices
+- Tested orientation changes during active gameplay
+- Ensured consistent performance across different browsers
+- Validated accessibility improvements for better inclusivity

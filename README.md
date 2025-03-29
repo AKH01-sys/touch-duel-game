@@ -64,6 +64,11 @@ For the best experience on mobile:
 
 ## 🔄 Version History
 
+- **v2.3.3**: Documentation update & game refinements
+- **v2.3.2**: Bug fixes & code cleanup
+- **v2.3.1**: Code cleanup & unused file removal
+- **v2.3.0**: UX improvements & simplification
+- **v2.2.1**: Code cleanup & error fixes
 - **v2.2**: Performance optimization and code quality improvements
 - **v2.1**: Redesigned independent game modes
 - **v2.0**: Added Mirror Mode game variant
