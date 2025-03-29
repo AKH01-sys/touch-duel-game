@@ -449,3 +449,30 @@ Please ensure you have the following audio files in the `/audio/` folder:
 - Simplified file structure
 - Eliminated potential confusion about which utilities are actively used
 - Focused development on core game functionality
+
+---
+
+## Version 2.3.2 - Bug Fixes & Code Cleanup
+
+### Error Fixes
+- Fixed corrupted JavaScript code in script.js
+- Restored missing spawnMirrorDots and handlePenaltyTouch functions
+- Fixed bugs in loadUserPreferences function
+- Restored proper screen orientation handling in the startGame function
+
+### Improved Code Quality
+- Ensured all functions are properly defined and complete
+- Reorganized code structure for better readability and maintainability
+- Fixed errors caused by code merging issues
+
+### Technical Changes
+- Fixed the event handling flow for all game modes
+- Ensured proper transitions between game screens
+- Fixed orientation handling between landscape and portrait modes
+- Made sure user preferences are correctly applied when starting a game
+
+### Testing Notes
+- All game modes (Classic, Penalty, Mirror) now work correctly
+- Screen orientation switching works properly
+- User preferences are saved and loaded correctly
+- Game state management prevents issues with multiple game starts

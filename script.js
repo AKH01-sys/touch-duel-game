@@ -216,6 +216,72 @@ function setupEventListeners(type, action) {
   }
 }
 
+function saveUserPreferences() {
+  const preferences = {
+    gameDuration: CONFIG.gameDuration,
+    customDuration: document.getElementById('custom-duration').value,
+    gameMode: CONFIG.gameMode,
+    orientation: document.querySelector('input[name="screen-orientation"]:checked').value
+  };
+  
+  localStorage.setItem('touchDuelPreferences', JSON.stringify(preferences));
+}
+
+function loadUserPreferences() {
+  const savedPrefs = localStorage.getItem('touchDuelPreferences');
+  
+  if (savedPrefs) {
+    try {
+      const preferences = JSON.parse(savedPrefs);
+      
+      // Set game duration radio buttons
+      const durationRadios = document.getElementsByName('game-duration');
+      let durationFound = false;
+      
+      for (const radio of durationRadios) {
+        if (radio.value === String(preferences.gameDuration)) {
+          radio.checked = true;
+          durationFound = true;
+          break;
+        }
+      }
+      
+      // If the saved duration doesn't match standard options, use custom
+      if (!durationFound && preferences.gameDuration) {
+        const customRadio = document.querySelector('input[name="game-duration"][value="custom"]');
+        if (customRadio) {
+          customRadio.checked = true;
+          document.getElementById('custom-duration').value = preferences.customDuration || preferences.gameDuration;
+        }
+      }
+      
+      // Set game mode
+      if (preferences.gameMode) {
+        const gameModeRadio = document.querySelector(`input[name="game-mode"][value="${preferences.gameMode}"]`);
+        if (gameModeRadio) {
+          gameModeRadio.checked = true;
+        }
+      }
+      
+      // Set orientation
+      if (preferences.orientation) {
+        const orientationRadio = document.querySelector(`input[name="screen-orientation"][value="${preferences.orientation}"]`);
+        if (orientationRadio) {
+          orientationRadio.checked = true;
+        }
+      }
+      
+      // Update CONFIG
+      CONFIG.gameDuration = preferences.gameDuration || CONFIG.gameDuration;
+      CONFIG.gameMode = preferences.gameMode || CONFIG.gameMode;
+      
+    } catch (error) {
+      console.error("Error loading preferences:", error);
+      // If there's an error, we'll just use defaults
+    }
+  }
+}
+
 function startGame() {
   if (GAME_STATE.isSettingUp) return; // Prevent multiple starts
   GAME_STATE.isSettingUp = true;
@@ -244,6 +310,24 @@ function startGame() {
       break;
     }
   }
+  
+  // Apply screen orientation
+  const isVertical = document.querySelector('input[name="screen-orientation"]:checked').value === 'vertical';
+  if (isVertical) {
+    gameScreen.classList.add('vertical');
+  } else {
+    gameScreen.classList.remove('vertical');
+  }
+  
+  // Save user preferences
+  saveUserPreferences();
+  
+  // Preload sounds before game starts
+  preloadSounds();
+  
+  // Start with countdown sequence
+  startScreen.classList.remove('active');
+  gameScreen.classList.add('active');
 
   let countdown = CONFIG.countdownTime;
   timerDisplay.textContent = countdown;
@@ -335,6 +419,104 @@ function endGame() {
   }
 
   playSound(endSound);
+}
+
+function handlePenaltyTouch(e) {
+  const target = e.target;
+  // Only apply penalty if the touch is not on a dot
+  if (!target.classList.contains('dot')) {
+    // This is an incorrect tap anywhere in the play area
+    if (e.currentTarget === player1Zone && score1 > 0) {
+      score1--;
+      playSound(errorSound, true);
+      score1Display.textContent = score1;
+    } else if (e.currentTarget === player2Zone && score2 > 0) {
+      score2--;
+      playSound(errorSound, true);
+      score2Display.textContent = score2;
+    }
+  }
+}
+
+function spawnMirrorDots() {
+  // Clear any existing dots first
+  clearActiveDots();
+  
+  // Get a position from player 1's zone to use as reference
+  const { x: x1, y: y1 } = getRandomPosition(player1Zone);
+  
+  // Create player 1's dot
+  const dot1 = createDot(player1Zone, 1, x1, y1);
+  
+  // Now create player 2's dot at the equivalent position
+  // We need to calculate the relative position in player 2's zone
+  const zone1Rect = player1Zone.getBoundingClientRect();
+  const zone2Rect = player2Zone.getBoundingClientRect();
+  
+  let x2, y2;
+  
+  const isVertical = gameScreen.classList.contains('vertical');
+  if (isVertical) {
+    // For vertical layout, mirror the Y position relative to the height
+    // X position stays proportionally the same
+    const relativeX = x1 / zone1Rect.width;
+    x2 = relativeX * zone2Rect.width;
+    y2 = zone2Rect.height - (y1 / zone1Rect.height * zone2Rect.height);
+  } else {
+    // For horizontal layout, mirror the X position relative to the width
+    // Y position stays proportionally the same
+    const relativeY = y1 / zone1Rect.height;
+    x2 = zone2Rect.width - (x1 / zone1Rect.width * zone2Rect.width);
+    y2 = relativeY * zone2Rect.height;
+  }
+  
+  // Create player 2's dot at the mirrored position
+  const dot2 = createDot(player2Zone, 2, x2, y2);
+  
+  // Store both dots in our tracker
+  activeDots = [
+    { dot: dot1, playerZone: player1Zone, playerNumber: 1 },
+    { dot: dot2, playerZone: player2Zone, playerNumber: 2 }
+  ];
+}
+
+function createDot(playerZone, playerNumber, x, y) {
+  const dot = document.createElement('div');
+  dot.classList.add('dot');
+  
+  // Position dot at the calculated coordinates
+  dot.style.left = `${x}px`;
+  dot.style.top = `${y}px`;
+  
+  // Add the touch handler for mirror mode
+  function handleMirrorTouch(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    // Award point to the player who tapped first
+    if (playerNumber === 1) {
+      score1++;
+      score1Display.textContent = score1;
+    } else {
+      score2++;
+      score2Display.textContent = score2;
+    }
+    
+    // Play the sound
+    playSound(tapSound, true);
+    
+    // Clear the dots and spawn new ones
+    clearActiveDots();
+    spawnMirrorDots();
+  }
+  
+  // Add event listeners
+  dot.addEventListener('click', handleMirrorTouch);
+  dot.addEventListener('touchstart', handleMirrorTouch, { passive: false });
+  
+  // Add dot to player zone
+  playerZone.appendChild(dot);
+  return dot;
 }
 
 startButton.addEventListener('click', startGame);
