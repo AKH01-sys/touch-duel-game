@@ -86,8 +86,3 @@ For the best experience on mobile:
 ## 📝 License
 
 MIT License - See LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- Sounds from [Freesound.org](https://freesound.org)
-- Inspired by classic reflex arcade games
