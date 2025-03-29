@@ -194,9 +194,8 @@ function spawnDot(playerZone, playerNumber) {
     }
 
     if (CONFIG.vibration) {
-      try {
-        navigator.vibrate(30);
-      } catch (e) {}
+      // Use a crisp, light haptic for successful taps
+      safeVibrate(30, 'light');
     }
 
     playSound(tapSound);
@@ -373,11 +372,34 @@ function startGame() {
   enhancedCountdown();
 }
 
-function safeVibrate(pattern) {
-  if (CONFIG.vibration) {
-    try {
-      navigator.vibrate(pattern);
-    } catch (e) {}
+// Replace the simple safeVibrate function with an enhanced haptic version
+function safeVibrate(pattern, intensity = 'medium') {
+  if (!CONFIG.vibration) return;
+  
+  try {
+    // Try to use advanced haptic feedback if available (future-proofing)
+    if (window.navigator.haptics) {
+      // This is a forward-looking approach as browsers add haptic APIs
+      switch(intensity) {
+        case 'light':
+          window.navigator.haptics.vibrate('light');
+          break;
+        case 'heavy':
+          window.navigator.haptics.vibrate('heavy');
+          break;
+        default:
+          window.navigator.haptics.vibrate('medium');
+      }
+      return;
+    }
+    
+    // iOS specific haptic pattern (future implementation)
+    // Currently limited in browser support, but included for future compatibility
+    
+    // Fall back to standard vibration API
+    navigator.vibrate(pattern);
+  } catch (e) {
+    // Silent fallback if vibration API is not available
   }
 }
 
@@ -390,10 +412,12 @@ function enhancedCountdown() {
     countdown--;
     if (countdown > 0) {
       countdownNumber.textContent = countdown;
-      safeVibrate(50);
+      // Medium intensity for countdown ticks
+      safeVibrate(50, 'medium');
     } else {
       countdownNumber.textContent = 'GO!';
-      safeVibrate(200);
+      // Strong haptic for game start
+      safeVibrate([30, 30, 200], 'heavy');
       setTimeout(() => {
         countdownOverlay.classList.add('hidden');
         initializeGame();
@@ -474,10 +498,14 @@ function handlePenaltyTouch(e) {
     if (e.currentTarget === player1Zone && score1 > 0) {
       score1--;
       playSound(errorSound);
+      // Error pattern for penalty
+      safeVibrate([10, 10, 40, 10, 40], 'medium');
       score1Display.textContent = score1;
     } else if (e.currentTarget === player2Zone && score2 > 0) {
       score2--;
       playSound(errorSound);
+      // Error pattern for penalty
+      safeVibrate([10, 10, 40, 10, 40], 'medium');
       score2Display.textContent = score2;
     }
   }
