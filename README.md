@@ -21,7 +21,8 @@ Touch Duel is a competitive two-player game where each player races to tap dots 
   - Color blind friendly design with pattern differentiation
   - High contrast mode for better visibility
   - Dark mode support based on system preferences
-  - Advanced haptic feedback for important game events
+  - Subtle haptic feedback with fallback support
+  - Customizable feedback intensity for different devices
 - **User preferences**: Settings for haptic feedback, sound, and visual contrast
 - **Tutorial**: Visual guide explaining how to play
 - **Progressive Web App**: Install to home screen for offline play
@@ -68,6 +69,7 @@ cd touch-duel-game
 
 ## 🔄 Version History
 
+- **v3.1.2**: Enhanced haptic feedback with subtle vibrations
 - **v3.1.1**: Code optimization & performance improvements
 - **v3.1.0**: "Got It" Button Fix & tutorial improvements
 - **v3.0.9**: Bug fixes & user experience improvements

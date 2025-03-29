@@ -171,6 +171,8 @@ function spawnDot(playerZone, playerNumber) {
   let dotTimeout;
 
   function handleTouch(e) {
+    if (!GAME_STATE.isRunning) return;
+    
     e.stopPropagation();
     e.preventDefault();
 
@@ -194,8 +196,8 @@ function spawnDot(playerZone, playerNumber) {
     }
 
     if (CONFIG.vibration) {
-      // Use a crisp, light haptic for successful taps
-      safeVibrate(30, 'light');
+      // Use a more subtle haptic for successful taps (Spotify-like)
+      safeVibrate(20, 'light');
     }
 
     playSound(tapSound);
@@ -372,11 +374,36 @@ function startGame() {
   enhancedCountdown();
 }
 
-// Replace the simple safeVibrate function with an enhanced haptic version
+// Update the safeVibrate function to be more subtle
 function safeVibrate(pattern, intensity = 'medium') {
   if (!CONFIG.vibration) return;
   
   try {
+    // Use more subtle vibration patterns (classic Android style)
+    let vibrationPattern;
+    
+    // Convert pattern to an array if it's a single number
+    if (typeof pattern === 'number') {
+      // Make durations shorter for subtlety
+      switch(intensity) {
+        case 'light':
+          vibrationPattern = pattern > 20 ? 20 : pattern;
+          break;
+        case 'heavy':
+          vibrationPattern = pattern > 35 ? 35 : pattern;
+          break;
+        default: // medium
+          vibrationPattern = pattern > 25 ? 25 : pattern;
+      }
+    } else if (Array.isArray(pattern)) {
+      // Scale down array patterns for subtlety
+      vibrationPattern = pattern.map(duration => 
+        Math.min(duration, Math.max(10, Math.floor(duration * 0.7)))
+      );
+    } else {
+      vibrationPattern = 20; // Default subtle vibration
+    }
+    
     // Try to use advanced haptic feedback if available (future-proofing)
     if (window.navigator.haptics) {
       // This is a forward-looking approach as browsers add haptic APIs
@@ -385,19 +412,16 @@ function safeVibrate(pattern, intensity = 'medium') {
           window.navigator.haptics.vibrate('light');
           break;
         case 'heavy':
-          window.navigator.haptics.vibrate('heavy');
+          window.navigator.haptics.vibrate('medium'); // Downgrade heavy to medium for subtlety
           break;
         default:
-          window.navigator.haptics.vibrate('medium');
+          window.navigator.haptics.vibrate('light'); // Downgrade medium to light for subtlety
       }
       return;
     }
     
-    // iOS specific haptic pattern (future implementation)
-    // Currently limited in browser support, but included for future compatibility
-    
-    // Fall back to standard vibration API
-    navigator.vibrate(pattern);
+    // Fall back to standard vibration API with subtle patterns
+    navigator.vibrate(vibrationPattern);
   } catch (e) {
     // Silent fallback if vibration API is not available
   }
@@ -408,16 +432,19 @@ function enhancedCountdown() {
   let countdown = CONFIG.countdownTime;
   countdownNumber.textContent = countdown;
   
+  // Add initial haptic feedback for "3"
+  safeVibrate(20, 'light');
+  
   const countdownTimer = setInterval(() => {
     countdown--;
     if (countdown > 0) {
       countdownNumber.textContent = countdown;
-      // Medium intensity for countdown ticks
-      safeVibrate(50, 'medium');
+      // More subtle haptic for countdown ticks
+      safeVibrate(25, countdown === 1 ? 'medium' : 'light');
     } else {
       countdownNumber.textContent = 'GO!';
-      // Strong haptic for game start
-      safeVibrate([30, 30, 200], 'heavy');
+      // Still relatively strong but more subtle haptic for game start
+      safeVibrate([20, 20, 35], 'medium');
       setTimeout(() => {
         countdownOverlay.classList.add('hidden');
         initializeGame();
@@ -470,6 +497,11 @@ function endGame() {
   GAME_STATE.isRunning = false;
   GAME_STATE.isSettingUp = false;
 
+  // Add subtle end-game haptic feedback
+  if (CONFIG.vibration) {
+    safeVibrate([15, 15, 30], 'medium');
+  }
+
   setupEventListeners('penalty', 'remove');
   clearActiveDots();
   clearInterval(countdownInterval);
@@ -493,19 +525,21 @@ function endGame() {
 }
 
 function handlePenaltyTouch(e) {
+  if (!GAME_STATE.isRunning) return;
+  
   const target = e.target;
   if (!target.classList.contains('dot')) {
     if (e.currentTarget === player1Zone && score1 > 0) {
       score1--;
       playSound(errorSound);
-      // Error pattern for penalty
-      safeVibrate([10, 10, 40, 10, 40], 'medium');
+      // More subtle error pattern for penalty (Spotify-like)
+      safeVibrate([10, 10, 20], 'light');
       score1Display.textContent = score1;
     } else if (e.currentTarget === player2Zone && score2 > 0) {
       score2--;
       playSound(errorSound);
-      // Error pattern for penalty
-      safeVibrate([10, 10, 40, 10, 40], 'medium');
+      // More subtle error pattern for penalty (Spotify-like)
+      safeVibrate([10, 10, 20], 'light');
       score2Display.textContent = score2;
     }
   }
@@ -555,6 +589,8 @@ function createDot(playerZone, playerNumber, x, y) {
   dot.style.top = `${y}px`;
   
   function handleMirrorTouch(e) {
+    if (!GAME_STATE.isRunning) return;
+    
     e.stopPropagation();
     e.preventDefault();
     
@@ -571,6 +607,11 @@ function createDot(playerZone, playerNumber, x, y) {
     } else {
       score2++;
       score2Display.textContent = score2;
+    }
+    
+    // Add subtle haptic feedback for mirror mode
+    if (CONFIG.vibration) {
+      safeVibrate(20, 'light');
     }
     
     playSound(tapSound);
