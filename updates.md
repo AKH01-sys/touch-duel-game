@@ -4,6 +4,34 @@ This document tracks the key updates and changes to the Touch Duel game.
 
 ---
 
+## Version 3.1.2 - Haptic Feedback Improvements
+
+### Haptic Feedback Improvements
+- Reduced overall haptic feedback intensity for better user experience
+- Added missing haptic feedback for countdown "3"
+- Made haptic feedback more consistent with modern Android apps
+- Added Spotify-like subtle feedback patterns
+- Improved fallback support for devices without haptic motors
+
+### Bug Fixes
+- Fixed missing haptic feedback in mirror mode
+- Fixed inconsistent haptic patterns in penalty mode
+- Added game state checks for haptic feedback
+- Scaled down vibration durations for better battery life
+
+### Code Quality
+- Improved haptic feedback code organization
+- Added fallback patterns for older devices
+- Enhanced documentation for haptic implementation
+- Added version tracking in tutorial overlay
+
+### Future Plans
+- Investigate iOS-specific haptic patterns
+- Consider adding haptic intensity settings
+- Explore new game modes with unique feedback patterns
+
+---
+
 ## Version 3.1.1 - Code Optimization & Performance Improvements
 
 ### JavaScript Optimization
