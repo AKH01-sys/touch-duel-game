@@ -2,12 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Touch Duel: Reflex Rush</title>
+  
+  <!-- PWA meta tags -->
+  <meta name="theme-color" content="#4285f4" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="A fast-paced two-player reflex game for mobile devices" />
+  
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Stylesheet -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div id="start-screen" class="screen active">
+    <div id="start-screen" class="screen active">
     <h1>Touch Duel: Reflex Rush</h1>
     
     <div class="options-container">
@@ -93,5 +107,15 @@
   <audio id="end-sound" src="audio/end.mp3" preload="auto"></audio>
 
   <script src="script.js"></script>
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker registered'))
+          .catch(err => console.log('Service Worker registration failed: ', err));
+      });
+    }
+  </script>
 </body>
 </html>

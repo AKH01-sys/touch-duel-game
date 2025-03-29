@@ -501,6 +501,12 @@ function createDot(playerZone, playerNumber, x, y) {
   const dot = document.createElement('div');
   dot.classList.add('dot');
   
+  // Add mirror mode specific class for styling
+  if (CONFIG.gameMode === 'mirror') {
+    dot.classList.add('mirror-dot');
+    dot.classList.add(`player${playerNumber}-dot`);
+  }
+  
   // Position dot at the calculated coordinates
   dot.style.left = `${x}px`;
   dot.style.top = `${y}px`;
@@ -509,6 +515,11 @@ function createDot(playerZone, playerNumber, x, y) {
   function handleMirrorTouch(e) {
     e.stopPropagation();
     e.preventDefault();
+    
+    // Add visual feedback by adding a class
+    const scoreDisplay = playerNumber === 1 ? score1Display : score2Display;
+    scoreDisplay.classList.add('score-changed');
+    setTimeout(() => scoreDisplay.classList.remove('score-changed'), 300);
     
     // Award point to the player who tapped first
     if (playerNumber === 1) {

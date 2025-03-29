@@ -543,3 +543,94 @@ Please ensure you have the following audio files in the `/audio/` folder:
 - Confirmed layout improvements in portrait mode
 - Validated gameplay flow with proper timing of dot spawning
 - Tested on various mobile devices to ensure consistent experience
+
+---
+
+## Version 2.3.5 - Accessibility & Mobile Experience Enhancements
+
+### Improved Mirror Mode Feedback
+- Added visual differentiation between player dots in mirror mode:
+  - Blue dots for Player 1
+  - Red dots for Player 2
+  - Added visual feedback when scoring in mirror mode
+  - Improved responsive animations for a more tactile feel
+
+### Accessibility Improvements
+- Enhanced color accessibility for users with color vision deficiencies:
+  - Added subtle pattern differences to player zones
+  - Improved contrast ratios between UI elements
+  - Maintained existing color scheme while adding non-color indicators
+
+### Technical Implementation
+- Added CSS patterns for better zone differentiation
+- Implemented fullscreen API with proper error handling
+- Added viewport-fit=cover to handle notched displays
+- Integrated PWA meta tags for improved mobile experience
+- Created dot styling specific to mirror mode
+
+### Testing Notes
+- Verified functionality on iOS and Android devices
+- Tested with color vision deficiency simulators
+- Confirmed fullscreen functionality across browsers
+- Validated home screen app experience
+
+---
+
+## Version 2.3.6 - PWA Implementation & Modern Device Support
+
+### PWA Capabilities
+- Added Progressive Web App functionality:
+  - Works offline after first visit
+  - Can be installed on home screen
+  - Launches in standalone mode (without browser UI)
+  - Optimized startup experience
+
+### Modern Device Compatibility
+- Added support for devices with notches and camera holes:
+  - Properly handles safe areas in all orientations
+  - Dynamically adjusts UI elements to avoid notches
+  - Ensures timer and score elements remain visible
+  - Maintains gameplay area integrity on all devices
+
+### Technical Implementation
+- Created manifest.json for PWA configuration
+- Added service worker for offline support and caching
+- Implemented environment variable support for safe areas
+- Added proper meta tags and icons for home screen installation
+- Ensured backward compatibility with older devices
+
+### Testing Notes
+- Verified offline functionality
+- Tested on devices with notches (iPhone X and newer)
+- Confirmed standalone mode behavior
+- Validated home screen installation process
+
+---
+
+## Version 2.3.7 - PWA Refinement & Documentation Overhaul
+
+### PWA Refinements
+- Optimized PWA implementation with only essential files:
+  - Removed references to non-existent safari-pinned-tab.svg
+  - Simplified service worker error handling
+  - Ensured all cached assets actually exist
+  - Streamlined favicon implementation
+
+### Documentation Improvements
+- Completely rewrote the Product Requirements Document (PRD):
+  - Organized around key features and user stories
+  - Better alignment with actual implementation
+  - Improved readability and structure
+  - Clear separation between implemented and future features
+  
+### README Updates
+- Enhanced installation instructions for PWA
+- Clarified device compatibility details
+- Added information about offline functionality
+- Updated technical specifications
+
+### Technical Improvements
+- Optimized caching strategy for better offline performance
+- Ensured proper handling of network errors
+- Improved PWA installation experience
+- Correctly implemented favicon handling for all platforms

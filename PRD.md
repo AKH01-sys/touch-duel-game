@@ -1,138 +1,182 @@
-# 📝 Product Requirements Document (PRD)
-
-## 🎮 Product Name  
-**Touch Duel: Reflex Rush**
+# 📱 Touch Duel: Reflex Rush
+## Product Requirements Document
 
 ---
 
-## 📌 Objective  
-Build a fast-paced, two-player mobile browser game where players race to tap randomly appearing dots in their own half of the screen. Only one dot appears at a time per player. The game ends after a fixed time limit, and the player with the most successful taps wins.
+## 1. Product Overview
+
+**Touch Duel: Reflex Rush** is a two-player mobile browser game designed for quick, competitive play on a single device. Players compete by tapping dots that appear on their half of the screen, with the faster player winning.
+
+### 1.1 Core Value Proposition
+- Fast-paced gameplay (30-second matches by default)
+- Immediate setup with minimal barriers to play
+- Perfect for settling friendly disputes or killing time together
+
+### 1.2 Target Audience
+- Mobile device users (primary)
+- Friends looking for quick competitive games
+- Ages 8+ (simple mechanics, no complex instructions)
 
 ---
 
-## 🧑‍💻 Target Platform  
-- Mobile-first web game  
-- Runs fully client-side as a **static website**  
-- Supports modern mobile browsers (Safari, Chrome, Firefox)  
-- Hosted on Netlify/Vercel/GitHub Pages/etc.
+## 2. User Experience
+
+### 2.1 Key User Stories
+
+**As a player, I want to:**
+- Start a game quickly with minimal setup
+- Understand the rules immediately without tutorials
+- See my score updating in real-time
+- Know clearly when I've won or lost
+- Easily play another round after finishing
+- Adjust settings to customize my experience
+- Play on any mobile device regardless of screen size
+- Install the game on my home screen for quick access
+- Play without internet connection
+
+### 2.2 Game Flow
+1. User opens game and selects settings (duration, mode, orientation)
+2. Game begins with countdown (3, 2, 1, GO!)
+3. Dots appear for both players to tap
+4. Upon tapping a dot, player receives a point and a new dot appears
+5. When timer ends, scores are compared and winner is declared
+6. Players can choose to play again or change settings
 
 ---
 
-## 🔧 Core Gameplay Mechanics
+## 3. Technical Requirements
 
-### 👆 Screen Layout
-- Split vertically into **two halves**: Player 1 (left), Player 2 (right)
-- Responsive layout adapts to screen size, prioritizing tap targets and clarity
+### 3.1 Platform Support
+- **Primary**: Mobile browsers (iOS Safari, Android Chrome)
+- **Secondary**: Desktop browsers (Chrome, Firefox, Safari, Edge)
+- **Progressive Web App** capabilities for offline use and home screen installation
 
-### 🎮 Game Modes
-- **Classic Mode**: One dot per player, standard scoring
-- **Penalty Mode**: Incorrect taps (missing a dot) result in point deduction
-- **Mirror Mode**: Dots appear at mirrored positions for both players, with first-to-tap scoring
-
-### 🟣 Dot Spawning
-- **One dot at a time per player**  
-- Appears in a **random location** within their half  
-- Dot disappears when tapped, replaced with a new one  
-- If not tapped within X seconds (e.g. 3s), it times out and gets replaced
-
-### ⏱ Game Flow
-1. Start screen with instructions → Start button
-2. Countdown (e.g. 3...2...1...GO!)
-3. Dots appear → Players tap to score
-4. Timer counts down (e.g. 20–30s)
-5. When time runs out → Show scores + winner
-6. Option to **Rematch** or **Restart Game**
+### 3.2 Implementation Constraints
+- Static website with no server-side components
+- Vanilla JavaScript (no frameworks)
+- Optimized performance for smooth animations
+- Mobile-first responsive design
+- Offline functionality via service worker
 
 ---
 
-## 🧠 Touch Handling Logic
+## 4. Game Mechanics
 
-- Use `touchstart` events to register taps
-- Only count touches that intersect with the current dot
-- Ignore multi-touch abuse by:
-  - Allowing only one dot per player
-  - Removing tapped dot instantly to prevent multiple hits
-- Optional game mode: Penalty for incorrect taps (increases game duration or subtracts point)
+### 4.1 Core Mechanics
+- One dot appears at a time in each player's zone
+- Tapping a dot awards one point
+- Dots timeout and respawn if not tapped within 3 seconds
+- Game ends after a predetermined time limit (default: 30 seconds)
+- Higher score wins, ties are possible
 
----
+### 4.2 Game Modes
+- **Classic**: Standard gameplay, one point per dot tapped
+- **Penalty**: Missing the play area deducts one point
+- **Mirror**: Dots appear in mirrored positions, first player to tap gets the point
 
-## 📊 Scoring & Feedback
-
-### ✅ Real-Time UI
-- Player 1 and Player 2 scores shown at the top of each half  
-- Countdown timer centered or placed at the top  
-- Visual/audio feedback when a dot is tapped
-
-### 🎵 Sound Feedback
-- Tap sound on correct hit  
-- Error sound (optional game mode only)  
-- Countdown tick  
-- Final buzzer  
-- Victory/Defeat sound
+### 4.3 Customization Options
+- Game duration: 10s, 30s, 45s, or custom (5-300s)
+- Screen orientation: Horizontal (left/right) or Vertical (up/down)
+- Automatically remember last used settings
 
 ---
 
-## 🎨 UI/UX Requirements
+## 5. User Interface
 
-### Mobile-First Design
-- Large tap areas  
-- Clear player zones with color-coded sides  
-- Dots are large enough for thumbs but not too easy  
-- Text is readable on small devices (12pt+ minimum)  
-- Smooth animations and transitions  
-- **Remember user preferences** between game sessions
+### 5.1 Screen Layouts
 
-### Screens
-1. **Welcome Screen**
-   - Game title
-   - Start Game button
-   - Optional mode toggle (Penalty mode)
-2. **Game Screen**
-   - Real-time score for each player
-   - Timer countdown
-   - Dots appearing in each zone
-3. **Results Screen**
-   - Final scores
-   - Winner message
-   - “Rematch” and “Restart” buttons
+**Start Screen:**
+- Game title
+- Game duration selection
+- Game mode selection
+- Screen orientation selection
+- Start button
 
----
+**Game Screen:**
+- Player scores prominently displayed
+- Countdown timer
+- Clear visual division between player zones
+- Distinctive player zone styling
 
-## 🔩 Tech Stack
+**Result Screen:**
+- Winner announcement
+- Final scores
+- Play Again button
+- Change Settings button
 
-| Component        | Technology             |
-|------------------|------------------------|
-| Structure        | HTML5                  |
-| Styling          | CSS3 (Flexbox/Grid, transitions) |
-| Interactivity    | Vanilla JavaScript     |
-| Sound            | Web Audio API / `<audio>` tag |
-| Storage          | localStorage for user preferences |
-| Hosting          | Netlify, Vercel, GitHub Pages |
+### 5.2 Visual Design
+- High contrast colors for gameplay elements
+- Accessible design with visual patterns for color blindness
+- Minimal UI during gameplay to maximize playing area
+- Responsive layouts for all device orientations and sizes
+- Safe area handling for notched devices
 
 ---
 
-## 🧪 Testing & Validation
+## 6. Feedback Systems
 
-| Feature                        | Test Criteria                                     |
-|-------------------------------|---------------------------------------------------|
-| Touch accuracy                | Only valid dot taps are registered                |
-| Dot lifecycle                 | Dots spawn, timeout, and respawn correctly        |
-| Multi-touch behavior          | Only one touch per player counted at a time      |
-| Score display                 | Updates immediately on correct taps               |
-| Timer                         | Countdown works accurately and ends game reliably |
-| Rematch/Restart               | Game resets cleanly with fresh state              |
-| Mobile responsiveness         | Layout adapts to various screen sizes             |
-| Audio                         | Sounds trigger on appropriate actions             |
+### 6.1 Visual Feedback
+- Score updates with animation
+- Dot tap animation
+- Countdown animation
+- Game end transition
+- Score comparison highlighting
+
+### 6.2 Audio Feedback
+- Tap sound on successful dot hit
+- Error sound on penalty (penalty mode only)
+- Game end sound
+- Countdown sounds
 
 ---
 
-## 🧠 Stretch Features (Optional for v2)
-- Difficulty presets (faster spawn intervals, smaller dots)
-- Custom timer or round settings
-- Animated background themes
-- Dark mode
-- **Practice mode**: Single-player mode for practicing
-- **Game variants**:
-  - "Hot Potato": Dots must be tapped within decreasing time windows
-- **Haptic feedback** on supported devices
-- **Color themes** with high-contrast options for accessibility
+## 7. Data Management
+
+### 7.1 Local Storage
+- Save user preferences between sessions:
+  - Game duration
+  - Game mode
+  - Screen orientation
+
+### 7.2 PWA Implementation
+- Service worker for offline functionality
+- Web app manifest for home screen installation
+- Asset caching for offline performance
+
+---
+
+## 8. Project Scope
+
+### 8.1 Implemented Features (v2.3.7)
+- Three distinct game modes
+- Customizable game duration
+- Screen orientation options
+- User preference persistence
+- Real-time scoring
+- PWA capabilities
+- Modern device compatibility
+- Accessibility considerations
+- Cross-device support
+
+### 8.2 Future Considerations
+- Difficulty options (dot size, timeout duration)
+- Dark mode theme
+- High score tracking
+- Haptic feedback on supported devices
+- Single-player practice mode
+- Additional game variants
+
+---
+
+## 9. Success Metrics
+
+### 9.1 Performance Metrics
+- Load under 2 seconds on 3G connection
+- Smooth animations (60fps) during gameplay
+- Full functionality on devices 320px wide and larger
+
+### 9.2 User Metrics
+- Session duration
+- Return rate
+- Game mode selection distribution
+- Custom settings usage
