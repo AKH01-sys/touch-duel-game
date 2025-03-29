@@ -240,3 +240,212 @@ Please ensure you have the following audio files in the `/audio/` folder:
 - Added full documentation in README.md
 - Ensured all assets are properly referenced for GitHub Pages deployment
 - Added license information for open-source distribution
+
+---
+
+## Latest Update - v1.7 (Placement & Selection Fixes)
+
+### Dot Placement Improvements
+- Added smart dot placement with enhanced buffers:
+  - Increased edge buffer to prevent partial circles (minimum 35px from all edges)
+  - Added 40px buffer from center dividing line to prevent accidental penalties
+  - Added 60px buffer around scoreboards to prevent overlap with UI elements
+- Implemented a position validation system that ensures dots appear in optimal locations
+- Added fallback to prevent infinite loops if optimal position can't be found
+
+### UI/UX Improvements
+- Made all score elements and timer non-selectable:
+  - Prevents accidental text selection during gameplay
+  - Eliminates disruption from browser text selection UI
+  - Improves overall touch experience on mobile devices
+  
+### Technical Changes
+- Refactored `getRandomPosition()` function with:
+  - Better boundary calculations based on multiple constraints
+  - Position validation algorithm with attempt limiting
+  - Distance-based calculations for scoreboard avoidance
+- Added comprehensive cross-browser text selection prevention
+
+---
+
+## Latest Update - v1.8 (Persistent User Preferences)
+
+### User Preference Persistence
+- Added localStorage integration to remember user settings between sessions:
+  - Game duration (including custom duration values)
+  - Penalty mode toggle state
+  - Screen orientation preference (vertical/horizontal)
+- Game now automatically loads last-used settings when started
+- Settings are saved whenever a game begins
+
+### User Experience Improvements
+- First-time users still see default settings
+- Returning users see their last-used configuration
+- Settings persist even after browser restarts
+- Custom durations are properly preserved
+
+### Technical Implementation
+- Added `saveUserPreferences()` function to store settings in localStorage
+- Added `loadUserPreferences()` function to retrieve and apply saved settings
+- Used event listeners to load preferences when the page is ready
+- Added error handling for corrupted preference data
+- Updated PRD to reflect the new requirement for persistent settings
+
+---
+
+## Latest Update - v1.9 (UX Improvements)
+
+### Button Label Improvements
+- Renamed "Restart" button to "Change Settings" for clarity
+- Renamed "Rematch" button to "Play Again" for better understanding
+- These changes make the button purposes more immediately clear to players
+
+### PRD Updates
+- Updated documentation to reflect evolving product vision
+
+---
+
+## Latest Update - v2.0 (Mirror Mode)
+
+### New Game Variant: Mirror Mode
+- Added Mirror Mode - a competitive dot-tapping race:
+  - Dots appear at the same mirrored position on both player sides
+  - The first player to tap their dot gets the point
+  - Both dots disappear once either player taps their dot
+  - New dots instantly appear at new mirrored positions
+  - Creates a direct speed competition between players
+  
+### User Interface Updates
+- Added Mirror Mode checkbox in game settings
+- Mirror Mode and Penalty Mode can be toggled independently
+- Mirror Mode preference is saved between sessions
+
+### Technical Implementation
+- Added synchronized dot spawning system
+  - Dots are created at proportionally identical positions
+  - Position calculation adapts to both vertical and horizontal layouts
+- Created first-to-tap detection mechanism
+- Improved dot management with active dots tracking
+- Added proper cleanup for mode transitions
+
+---
+
+## Latest Update - v2.1 (Independent Game Modes)
+
+### Game Mode Restructuring
+- Completely redesigned game mode selection:
+  - Changed from toggleable options to distinct, independent game modes
+  - Created 3 clear choices: Classic, Penalty, and Mirror modes
+  - Simplified UI with radio buttons instead of checkboxes
+  - Eliminated mode combination confusion
+
+### Game Mode Descriptions
+- **Classic Mode**: Original gameplay with one dot per player, no penalties
+- **Penalty Mode**: Incorrect taps (missing a dot) result in point deduction
+- **Mirror Mode**: Synchronized dots in mirrored positions, first-to-tap scoring
+
+### Technical Implementation
+- Refactored game initialization to use a switch-case pattern for modes
+- Created cleaner separation between mode-specific code
+- Added proper event listener management for each mode
+- Updated preference saving to store selected game mode
+- Fixed incorrect description of Penalty Mode in documentation
+
+---
+
+## Latest Update - v2.2 (Performance Optimization)
+
+### Dot Placement Algorithm Improvements
+- Refactored dot positioning algorithm for better performance and reliability:
+  - Pre-calculate safe area boundaries once per placement request
+  - Improved space validation to prevent impossible placement attempts
+  - Added safeguard against insufficient space conditions
+  - Enhanced logging when position finding becomes challenging
+  - Simplified coordinate calculations for better readability
+
+### Sound System Enhancement
+- Added robust sound preloading mechanism:
+  - Sounds are now preloaded before the game starts
+  - Added error handlers for audio loading issues
+  - Improved debugging information for sound-related issues
+
+### Code Quality Improvements
+- Optimized variables for more consistent memory usage
+- Enhanced documentation and comments throughout the codebase
+- Added safeguards against edge-case scenarios
+- Improved error reporting for better troubleshooting
+
+### Technical Implementation
+- Modified `getRandomPosition()` function to be more efficient
+- Added proper warnings when MAX_ATTEMPTS limit is reached
+- Introduced `preloadSounds()` function to initialize audio before gameplay
+- Refactored coordinate calculations for better mathematical consistency
+
+---
+
+# Touch Duel: Reflex Rush - Latest Fixes
+
+## Version 2.2.1 - Code Cleanup & Error Fixes
+
+### Script.js Cleanup
+1. Fixed corrupted CONFIG object definition that had merged with sound code
+2. Removed duplicate event listener registrations at end of file
+3. Fixed formatting and removed redundant code blocks
+4. Ensured proper closure of all functions and code blocks
+
+### Key Changes
+- Restored proper CONFIG object structure
+- Cleaned up endGame() function implementation
+- Fixed event listener registration to prevent duplicates
+- Removed corrupted code segments that were causing potential issues
+- Maintained all existing functionality while improving code quality
+
+### Testing Notes
+- All game modes continue to work as expected
+- Sound effects working properly
+- Game flow remains unchanged
+- User preferences still save and load correctly
+
+---
+
+## Version 2.3.0 - UX Improvements & Simplification
+
+### Improved Game State Management
+- Added proper game state tracking for better reliability
+- Prevents multiple simultaneous game starts
+- Improves state transitions between screens
+- Added visual feedback when scoring points
+
+### Visual and Interactive Improvements
+- Enhanced visual feedback when scoring
+- Added scale animations to buttons for tactile feel
+- Improved tap highlight control for better mobile experience
+- Added proper focus styles for keyboard accessibility
+
+### Code Simplification
+- Removed pause feature to keep the codebase lightweight and focused
+- Simplified state management
+- Improved dot and score animations
+- Enhanced touch handling
+
+### Technical Details
+- Added GAME_STATE object to track current game status
+- Added score-changed animation class for immediate visual feedback
+- Improved button animations and interactivity
+- Added proper CSS transitions and transform effects
+
+---
+
+## Version 2.3.1 - Code Cleanup (Continued)
+
+### Removed Unused Files
+- Deleted the unused `gameUtils.js` file to keep the codebase clean and focused
+- The utility functions in this file were not being imported or used anywhere
+- Maintaining only the essential files for the game's functionality
+- This simplifies the project structure and reduces maintenance overhead
+
+### Technical Benefits
+- Reduced project size
+- Simplified file structure
+- Eliminated potential confusion about which utilities are actively used
+- Focused development on core game functionality

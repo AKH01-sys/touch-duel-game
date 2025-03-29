@@ -36,10 +36,20 @@
       
       <div class="option-group">
         <h3>Game Mode</h3>
-        <label>
-          <input type="checkbox" id="penalty-mode" />
-          Enable Penalty Mode
-        </label>
+        <div class="game-modes">
+          <label>
+            <input type="radio" name="game-mode" value="classic" checked />
+            Classic Mode
+          </label>
+          <label>
+            <input type="radio" name="game-mode" value="penalty" />
+            Penalty Mode
+          </label>
+          <label>
+            <input type="radio" name="game-mode" value="mirror" />
+            Mirror Mode
+          </label>
+        </div>
       </div>
       
       <div class="option-group">
@@ -74,8 +84,8 @@
     <h2 id="result-message"></h2>
     <p>Player 1: <span id="final-score1"></span></p>
     <p>Player 2: <span id="final-score2"></span></p>
-    <button id="rematch-button">Rematch</button>
-    <button id="restart-button">Restart</button>
+    <button id="rematch-button">Play Again</button>
+    <button id="restart-button">Change Settings</button>
   </div>
 
   <audio id="tap-sound" src="audio/tap.mp3" preload="auto"></audio>

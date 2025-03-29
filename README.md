@@ -13,17 +13,19 @@ Touch Duel is a competitive two-player game where each player races to tap dots 
 - **Fast-paced gameplay**: 10-45 second matches for quick rounds
 - **Two-player split-screen**: Compete head-to-head on a single device
 - **Flexible orientation**: Play in landscape (left/right) or portrait (up/down) mode
-- **Penalty mode**: Optional mode where touching the opponent's side deducts points
+- **Multiple game modes**:
+  - **Classic Mode**: Standard gameplay, one dot per player
+  - **Penalty Mode**: Missing a dot results in a point deduction
+  - **Mirror Mode**: Race to tap synchronized dots in mirrored positions
 - **Customizable duration**: Set your own game length from 5-300 seconds
 - **Sound effects**: Audio feedback for taps, penalties, and game end
 
 ## 🚀 How to Play
 
-1. Choose your game settings (duration, penalty mode, orientation)
+1. Choose your game settings (duration, game mode, orientation)
 2. Tap "Start Game" to begin
 3. Each player taps dots that appear on their side of the screen
-4. Avoid tapping your opponent's side in penalty mode
-5. The player with the highest score when time runs out wins!
+4. The player with the highest score when time runs out wins!
 
 ## 🛠️ Technical Details
 
@@ -62,6 +64,12 @@ For the best experience on mobile:
 
 ## 🔄 Version History
 
+- **v2.2**: Performance optimization and code quality improvements
+- **v2.1**: Redesigned independent game modes
+- **v2.0**: Added Mirror Mode game variant
+- **v1.9**: UX improvements with clearer button labels
+- **v1.8**: Added preference persistence with localStorage
+- **v1.7**: Improved dot placement and text selection prevention
 - **v1.6**: GitHub publication and documentation
 - **v1.5**: Sound effects optimization
 - **v1.4**: Vertical mode overhaul and critical fixes

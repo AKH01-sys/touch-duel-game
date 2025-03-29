@@ -24,6 +24,11 @@ Build a fast-paced, two-player mobile browser game where players race to tap ran
 - Split vertically into **two halves**: Player 1 (left), Player 2 (right)
 - Responsive layout adapts to screen size, prioritizing tap targets and clarity
 
+### 🎮 Game Modes
+- **Classic Mode**: One dot per player, standard scoring
+- **Penalty Mode**: Incorrect taps (missing a dot) result in point deduction
+- **Mirror Mode**: Dots appear at mirrored positions for both players, with first-to-tap scoring
+
 ### 🟣 Dot Spawning
 - **One dot at a time per player**  
 - Appears in a **random location** within their half  
@@ -75,6 +80,7 @@ Build a fast-paced, two-player mobile browser game where players race to tap ran
 - Dots are large enough for thumbs but not too easy  
 - Text is readable on small devices (12pt+ minimum)  
 - Smooth animations and transitions  
+- **Remember user preferences** between game sessions
 
 ### Screens
 1. **Welcome Screen**
@@ -100,6 +106,7 @@ Build a fast-paced, two-player mobile browser game where players race to tap ran
 | Styling          | CSS3 (Flexbox/Grid, transitions) |
 | Interactivity    | Vanilla JavaScript     |
 | Sound            | Web Audio API / `<audio>` tag |
+| Storage          | localStorage for user preferences |
 | Hosting          | Netlify, Vercel, GitHub Pages |
 
 ---
@@ -124,4 +131,8 @@ Build a fast-paced, two-player mobile browser game where players race to tap ran
 - Custom timer or round settings
 - Animated background themes
 - Dark mode
-- Share score / challenge a friend
+- **Practice mode**: Single-player mode for practicing
+- **Game variants**:
+  - "Hot Potato": Dots must be tapped within decreasing time windows
+- **Haptic feedback** on supported devices
+- **Color themes** with high-contrast options for accessibility

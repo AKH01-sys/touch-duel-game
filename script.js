@@ -5,7 +5,6 @@ const resultScreen = document.getElementById('result-screen');
 const startButton = document.getElementById('start-button');
 const rematchButton = document.getElementById('rematch-button');
 const restartButton = document.getElementById('restart-button');
-const penaltyToggle = document.getElementById('penalty-mode');
 
 const score1Display = document.getElementById('score1');
 const score2Display = document.getElementById('score2');
@@ -21,12 +20,19 @@ const tapSound = document.getElementById('tap-sound');
 const errorSound = document.getElementById('error-sound');
 const endSound = document.getElementById('end-sound');
 
-// Add configuration section after initial variables
 const CONFIG = {
   gameDuration: 30,
   dotSize: 50,
   dotTimeout: 3000,
-  countdownTime: 3
+  countdownTime: 3,
+  gameMode: 'classic' // Default game mode
+};
+
+// Add game state management after CONFIG
+const GAME_STATE = {
+  isRunning: false,
+  isSettingUp: false,
+  soundsLoaded: false
 };
 
 let gameDuration = CONFIG.gameDuration;
@@ -34,48 +40,104 @@ let countdownInterval;
 let currentTime;
 let score1 = 0;
 let score2 = 0;
-let penaltyMode = false;
+let activeDots = [];
 
 function getRandomPosition(zone) {
   const zoneRect = zone.getBoundingClientRect();
   const size = CONFIG.dotSize;
   const radius = size / 2;
-  
-  // Create a buffer zone equal to the dot's radius to prevent partial circles
-  // This ensures dots are fully contained within the player's zone
+
+  const BUFFER = {
+    edge: radius + 10,
+    center: 40,
+    score: 60
+  };
+
   const isVertical = gameScreen.classList.contains('vertical');
-  
-  let x, y;
-  
-  // Adjust the available area to ensure dots are fully visible
-  const availableWidth = zoneRect.width - size;
-  const availableHeight = zoneRect.height - size;
-  
-  // Position dots within the safe area (buffer from edges)
-  if (!isVertical) {
-    // In horizontal layout (left/right)
-    x = Math.floor(Math.random() * availableWidth + radius);
-    y = Math.floor(Math.random() * availableHeight + radius);
+  const scoreElement = zone.querySelector('.score');
+  const scoreRect = scoreElement.getBoundingClientRect();
+
+  const relativeScoreCenter = {
+    x: scoreRect.left - zoneRect.left + (scoreRect.width / 2),
+    y: scoreRect.top - zoneRect.top + (scoreRect.height / 2)
+  };
+
+  const boundaries = {
+    minX: BUFFER.edge,
+    maxX: zoneRect.width - BUFFER.edge,
+    minY: BUFFER.edge,
+    maxY: zoneRect.height - BUFFER.edge
+  };
+
+  if (isVertical) {
+    if (zone.id === 'player1') {
+      boundaries.maxY = zoneRect.height - BUFFER.center;
+    } else {
+      boundaries.minY = BUFFER.center;
+    }
   } else {
-    // In vertical layout (up/down)
-    x = Math.floor(Math.random() * availableWidth + radius);
-    y = Math.floor(Math.random() * availableHeight + radius);
+    if (zone.id === 'player1') {
+      boundaries.maxX = zoneRect.width - BUFFER.center;
+    } else {
+      boundaries.minX = BUFFER.center;
+    }
   }
-  
+
+  if (boundaries.maxX - boundaries.minX < size || boundaries.maxY - boundaries.minY < size) {
+    console.warn('Not enough space to place dots after applying buffers');
+    return {
+      x: boundaries.minX + (boundaries.maxX - boundaries.minX) / 2,
+      y: boundaries.minY + (boundaries.maxY - boundaries.minY) / 2
+    };
+  }
+
+  let x, y, distanceFromScore;
+  let attempts = 0;
+  const MAX_ATTEMPTS = 50;
+
+  do {
+    x = Math.floor(Math.random() * (boundaries.maxX - boundaries.minX) + boundaries.minX);
+    y = Math.floor(Math.random() * (boundaries.maxY - boundaries.minY) + boundaries.minY);
+    attempts++;
+
+    distanceFromScore = Math.sqrt(
+      Math.pow(x - relativeScoreCenter.x, 2) +
+      Math.pow(y - relativeScoreCenter.y, 2)
+    );
+
+    if (distanceFromScore > BUFFER.score) {
+      break;
+    }
+
+    if (attempts >= MAX_ATTEMPTS) {
+      console.warn('Max attempts reached when placing dot. Using best available position.');
+      break;
+    }
+  } while (true);
+
   return { x, y };
 }
 
-// Improved sound playing function with better error handling
+function preloadSounds() {
+  const sounds = [tapSound, errorSound, endSound];
+  sounds.forEach(sound => {
+    sound.load();
+    sound.preload = 'auto';
+    sound.addEventListener('error', (e) => {
+      console.error(`Error loading sound: ${sound.src}`, e);
+    });
+  });
+  console.log('Game sounds preloaded');
+}
+
 function playSound(sound, force = false) {
-  // Only play sound if it's not already playing or if force=true
   if (sound.paused || force) {
     sound.currentTime = 0;
     const playPromise = sound.play();
-    
+
     if (playPromise !== undefined) {
       playPromise.catch(error => {
         console.log("Sound play error:", error);
-        // Handle autoplay restrictions
         if (error.name === "NotAllowedError") {
           console.log("Sound autoplay restricted. User interaction required.");
         }
@@ -88,22 +150,23 @@ function spawnDot(playerZone, playerNumber) {
   const dot = document.createElement('div');
   dot.classList.add('dot');
   const { x, y } = getRandomPosition(playerZone);
-  
-  // Position dot at the calculated coordinates
+
   dot.style.left = `${x}px`;
   dot.style.top = `${y}px`;
 
-  // Store dot timeout reference so we can clear it if needed
   let dotTimeout;
 
   function handleTouch(e) {
     e.stopPropagation();
     e.preventDefault();
 
-    // Clear dot timeout to prevent error sound
     if (dotTimeout) {
       clearTimeout(dotTimeout);
     }
+
+    const scoreDisplay = playerNumber === 1 ? score1Display : score2Display;
+    scoreDisplay.classList.add('score-changed');
+    setTimeout(() => scoreDisplay.classList.remove('score-changed'), 300);
 
     if (playerNumber === 1) {
       score1++;
@@ -113,18 +176,14 @@ function spawnDot(playerZone, playerNumber) {
       score2Display.textContent = score2;
     }
 
-    // Use improved sound playing function
     playSound(tapSound, true);
-
     playerZone.removeChild(dot);
     spawnDot(playerZone, playerNumber);
   }
 
-  // Add mouse click support for desktop testing
   dot.addEventListener('click', handleTouch);
   dot.addEventListener('touchstart', handleTouch, { passive: false });
 
-  // Add timeout animation class but don't play error sound
   dotTimeout = setTimeout(() => {
     if (playerZone.contains(dot)) {
       dot.classList.add('timeout');
@@ -140,16 +199,34 @@ function spawnDot(playerZone, playerNumber) {
   playerZone.appendChild(dot);
 }
 
+function clearActiveDots() {
+  for (const dotInfo of activeDots) {
+    if (dotInfo.playerZone.contains(dotInfo.dot)) {
+      dotInfo.playerZone.removeChild(dotInfo.dot);
+    }
+  }
+  activeDots = [];
+}
+
+function setupEventListeners(type, action) {
+  if (type === 'penalty') {
+    const method = action === 'add' ? 'addEventListener' : 'removeEventListener';
+    player1Zone[method]('touchstart', handlePenaltyTouch);
+    player2Zone[method]('touchstart', handlePenaltyTouch);
+  }
+}
+
 function startGame() {
-  // Get selected game duration
+  if (GAME_STATE.isSettingUp) return; // Prevent multiple starts
+  GAME_STATE.isSettingUp = true;
+
   const durationRadios = document.getElementsByName('game-duration');
-  let selectedDuration = CONFIG.gameDuration; // Default value
-  
+  let selectedDuration = CONFIG.gameDuration;
+
   for (const radio of durationRadios) {
     if (radio.checked) {
       if (radio.value === 'custom') {
         selectedDuration = parseInt(document.getElementById('custom-duration').value);
-        // Ensure custom value is within valid range
         selectedDuration = Math.min(Math.max(selectedDuration, 5), 300);
       } else {
         selectedDuration = parseInt(radio.value);
@@ -157,31 +234,21 @@ function startGame() {
       break;
     }
   }
-  
-  // Update CONFIG
+
   CONFIG.gameDuration = selectedDuration;
-  
-  // Apply screen orientation
-  const isVertical = document.querySelector('input[name="screen-orientation"]:checked').value === 'vertical';
-  if (isVertical) {
-    gameScreen.classList.add('vertical');
-  } else {
-    gameScreen.classList.remove('vertical');
+
+  const modeRadios = document.getElementsByName('game-mode');
+  for (const radio of modeRadios) {
+    if (radio.checked) {
+      CONFIG.gameMode = radio.value;
+      break;
+    }
   }
-  
-  // Start with countdown sequence
-  startScreen.classList.remove('active');
-  gameScreen.classList.add('active');
-  
+
   let countdown = CONFIG.countdownTime;
   timerDisplay.textContent = countdown;
   timerDisplay.classList.add('countdown');
-  
-  // Ensure sounds are loaded and ready
-  tapSound.load();
-  errorSound.load();
-  endSound.load();
-  
+
   const countdownTimer = setInterval(() => {
     countdown--;
     if (countdown > 0) {
@@ -198,39 +265,42 @@ function startGame() {
 }
 
 function initializeGame() {
+  GAME_STATE.isRunning = true;
+  GAME_STATE.isSettingUp = false;
+
   score1 = 0;
   score2 = 0;
   currentTime = CONFIG.gameDuration;
   timerDisplay.textContent = currentTime;
-  penaltyMode = penaltyToggle.checked;
 
-  // Fix score elements handling
-  // Clear all contents except score elements
   const playerElements = document.querySelectorAll('.player-zone');
   playerElements.forEach(zone => {
-    // Remove all child elements except scores
     Array.from(zone.children).forEach(child => {
       if (!child.classList.contains('score')) {
         zone.removeChild(child);
       }
     });
   });
-  
-  // Make sure score displays are updated
+
   score1Display.textContent = score1;
   score2Display.textContent = score2;
 
-  // Spawn dots
-  spawnDot(player1Zone, 1);
-  spawnDot(player2Zone, 2);
+  clearActiveDots();
 
-  // Remove existing penalty listeners before adding new ones
-  player1Zone.removeEventListener('touchstart', handlePenaltyTouch);
-  player2Zone.removeEventListener('touchstart', handlePenaltyTouch);
-  
-  if (penaltyMode) {
-    player1Zone.addEventListener('touchstart', handlePenaltyTouch);
-    player2Zone.addEventListener('touchstart', handlePenaltyTouch);
+  switch (CONFIG.gameMode) {
+    case 'mirror':
+      spawnMirrorDots();
+      break;
+    case 'penalty':
+      setupEventListeners('penalty', 'add');
+      spawnDot(player1Zone, 1);
+      spawnDot(player2Zone, 2);
+      break;
+    case 'classic':
+    default:
+      spawnDot(player1Zone, 1);
+      spawnDot(player2Zone, 2);
+      break;
   }
 
   countdownInterval = setInterval(() => {
@@ -242,31 +312,14 @@ function initializeGame() {
   }, 1000);
 }
 
-function handlePenaltyTouch(e) {
-  const target = e.target;
-  // Only apply penalty if:
-  // 1. The touch is not on a dot
-  // 2. The player has a positive score to subtract from
-  if (!target.classList.contains('dot')) {
-    if (e.currentTarget === player1Zone && score1 > 0) {
-      score1--;
-      // Keep the error sound only for penalties
-      playSound(errorSound, true);
-      score1Display.textContent = score1;
-    } else if (e.currentTarget === player2Zone && score2 > 0) {
-      score2--;
-      // Keep the error sound only for penalties
-      playSound(errorSound, true);
-      score2Display.textContent = score2;
-    }
-  }
-}
-
 function endGame() {
-  // Remove penalty listeners
-  player1Zone.removeEventListener('touchstart', handlePenaltyTouch);
-  player2Zone.removeEventListener('touchstart', handlePenaltyTouch);
-  
+  GAME_STATE.isRunning = false;
+  GAME_STATE.isSettingUp = false;
+
+  setupEventListeners('penalty', 'remove');
+
+  clearActiveDots();
+
   clearInterval(countdownInterval);
   gameScreen.classList.remove('active');
   resultScreen.classList.add('active');
@@ -281,7 +334,6 @@ function endGame() {
     resultMessage.textContent = "It's a Tie!";
   }
 
-  // Use improved sound playing function
   playSound(endSound);
 }
 
@@ -290,3 +342,5 @@ rematchButton.addEventListener('click', startGame);
 restartButton.addEventListener('click', () => {
   location.reload();
 });
+
+document.addEventListener('DOMContentLoaded', loadUserPreferences);

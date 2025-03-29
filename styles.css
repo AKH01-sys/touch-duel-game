@@ -2,6 +2,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -73,10 +74,20 @@ button {
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  transition: transform 0.1s ease, background-color 0.2s ease;
 }
 
 button:hover {
   background-color: #2b6bc9;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button:focus-visible {
+  outline: 3px solid #4285f4;
+  outline-offset: 2px;
 }
 
 #game-screen {
@@ -161,6 +172,12 @@ button:hover {
   padding: 5px 15px;
   border-radius: 20px;
   background-color: rgba(255, 255, 255, 0.7);
+  /* Add the following properties to prevent text selection */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  cursor: default;
 }
 
 #player1 .score {
@@ -180,6 +197,12 @@ button:hover {
   z-index: 2;
   transform: translate(-50%, -50%);
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s ease;
+}
+
+.dot:active {
+  transform: translate(-50%, -50%) scale(0.9);
 }
 
 #result-screen {
@@ -243,4 +266,23 @@ label {
   0% { transform: scale(1); }
   50% { transform: scale(1.2); }
   100% { transform: scale(1); }
+}
+
+/* Prevent text selection throughout the game for better touch experience */
+#timer, #result-message, #final-score1, #final-score2 {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Add visual feedback when score changes */
+@keyframes scoreFlash {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); background-color: rgba(255, 255, 255, 0.9); }
+  100% { transform: scale(1); }
+}
+
+.score-changed {
+  animation: scoreFlash 0.3s ease-out;
 }
