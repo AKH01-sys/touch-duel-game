@@ -46,44 +46,49 @@ function getRandomPosition(zone) {
   const zoneRect = zone.getBoundingClientRect();
   const size = CONFIG.dotSize;
   const radius = size / 2;
+  const timerBand = document.getElementById('timer-band');
+  const timerBandRect = timerBand.getBoundingClientRect();
 
-  // Use percentages of zone dimensions for more consistent cross-device behavior
+  // Enhanced buffer calculations - using both percentage and absolute minimum
   const BUFFER = {
-    edge: Math.max(radius + 10, zoneRect.width * 0.05), // At least 5% of width from edge
-    center: Math.max(40, zoneRect.width * 0.1), // At least 10% of width from center
-    score: Math.max(60, zoneRect.width * 0.15) // At least 15% of width from score
+    edge: Math.max(radius + 15, zoneRect.width * 0.08), // Increased minimum edge buffer
+    center: Math.max(50, zoneRect.width * 0.12), // Increased center buffer
+    score: Math.max(70, zoneRect.width * 0.18), // Increased score buffer
+    timer: 15 // Additional buffer from timer band
   };
 
   const isVertical = gameScreen.classList.contains('vertical');
   const scoreElement = zone.querySelector('.score');
   const scoreRect = scoreElement.getBoundingClientRect();
   
-  // Calculate timer area buffer for portrait mode
-  const timerRect = timerDisplay.getBoundingClientRect();
-  const timerBuffer = isVertical ? (timerRect.height + 20) : 0; // Add extra padding
-
+  // Calculate relative positions for more precise boundaries
   const relativeScoreCenter = {
     x: scoreRect.left - zoneRect.left + (scoreRect.width / 2),
     y: scoreRect.top - zoneRect.top + (scoreRect.height / 2)
   };
 
+  // Calculate relative timer band position
+  const relativeTimerBottom = isVertical ? 
+    (timerBandRect.bottom - zoneRect.top + BUFFER.timer) : 0;
+
+  // Set boundaries with enhanced buffers
   const boundaries = {
     minX: BUFFER.edge,
     maxX: zoneRect.width - BUFFER.edge,
-    minY: BUFFER.edge,
+    minY: Math.max(BUFFER.edge, relativeTimerBottom),
     maxY: zoneRect.height - BUFFER.edge
   };
 
+  // Adjust boundaries based on orientation
   if (isVertical) {
-    // In vertical mode, adjust Y boundaries to account for timer
+    // In vertical mode, respect the timer band and center divider
     if (zone.id === 'player1') {
-      boundaries.minY = Math.max(boundaries.minY, timerBuffer);
       boundaries.maxY = zoneRect.height - BUFFER.center;
     } else {
-      boundaries.minY = BUFFER.center;
-      boundaries.maxY = zoneRect.height - Math.max(BUFFER.edge, timerBuffer / 2);
+      boundaries.minY = Math.max(BUFFER.center, boundaries.minY);
     }
   } else {
+    // In horizontal mode, respect the center divider
     if (zone.id === 'player1') {
       boundaries.maxX = zoneRect.width - BUFFER.center;
     } else {
@@ -91,7 +96,7 @@ function getRandomPosition(zone) {
     }
   }
 
-  // Ensure we have enough space to place a dot
+  // Safety check to ensure we have enough space
   if (boundaries.maxX - boundaries.minX < size || boundaries.maxY - boundaries.minY < size) {
     console.warn('Not enough space to place dots after applying buffers');
     return {
@@ -100,24 +105,29 @@ function getRandomPosition(zone) {
     };
   }
 
+  // Improved dot placement with better positioning algorithm
   let x, y, distanceFromScore;
   let attempts = 0;
   const MAX_ATTEMPTS = 50;
 
   do {
-    x = Math.floor(Math.random() * (boundaries.maxX - boundaries.minX) + boundaries.minX);
-    y = Math.floor(Math.random() * (boundaries.maxY - boundaries.minY) + boundaries.minY);
+    // Use more precise random positioning
+    x = Math.floor(Math.random() * (boundaries.maxX - boundaries.minX - size) + boundaries.minX + radius);
+    y = Math.floor(Math.random() * (boundaries.maxY - boundaries.minY - size) + boundaries.minY + radius);
     attempts++;
 
+    // Calculate distance from score display
     distanceFromScore = Math.sqrt(
       Math.pow(x - relativeScoreCenter.x, 2) +
       Math.pow(y - relativeScoreCenter.y, 2)
     );
 
+    // If we found a good position, break the loop
     if (distanceFromScore > BUFFER.score) {
       break;
     }
 
+    // Emergency exit to prevent infinite loops
     if (attempts >= MAX_ATTEMPTS) {
       console.warn('Max attempts reached when placing dot. Using best available position.');
       break;
@@ -357,6 +367,9 @@ function startGame() {
   let countdown = CONFIG.countdownTime;
   timerDisplay.textContent = countdown;
   timerDisplay.classList.add('countdown');
+  
+  // Make sure the timer band is visible during countdown
+  document.getElementById('timer-band').style.display = 'flex';
 
   const countdownTimer = setInterval(() => {
     countdown--;

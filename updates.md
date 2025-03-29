@@ -634,3 +634,44 @@ Please ensure you have the following audio files in the `/audio/` folder:
 - Ensured proper handling of network errors
 - Improved PWA installation experience
 - Correctly implemented favicon handling for all platforms
+
+---
+
+## Version 2.3.8 - UI Layout Improvements & Buffer Zone Fixes
+
+### Timer Area Enhancement
+- Added a dedicated timer band to separate the timer from gameplay:
+  - Clear visual distinction between timer and play areas
+  - Consistent styling in both portrait and landscape orientation
+  - Proper spacing to prevent accidental taps in timer area
+  - Band scales appropriately for different screen sizes
+
+### Portrait Mode Layout Fix
+- Completely redesigned portrait mode layout for precise 50/50 split:
+  - Exact mathematical calculation for equal player zones
+  - Proper accounting for timer band in space calculations
+  - Fixed player zone height calculations
+  - Enhanced separation between player areas
+
+### Buffer Zone Improvement
+- Significantly enhanced buffer zone implementation:
+  - Increased edge buffers to prevent dots from spawning too close to edges
+  - Added explicit timer band buffer to keep dots away from the timer area
+  - Improved buffer scaling across different device sizes
+  - More precise dot placement with better mathematical calculations
+  - Adjusted collision detection with screen edges and UI elements
+
+### Technical Changes
+- Restructured the layout system:
+  - Created a dedicated timer-band element
+  - Improved CSS with precise calculations for zone heights
+  - Enhanced safe area handling for modern devices with notches
+  - Fixed buffer calculations in getRandomPosition() function
+  - Better random positioning algorithm with proper radius consideration
+
+### Visual Design Improvements
+- Enhanced visual separation between game elements:
+  - More prominent borders between player zones
+  - Improved timer styling with subtle shadow for better visibility
+  - Better use of space in both orientations
+  - Maintained color scheme while improving spatial organization
